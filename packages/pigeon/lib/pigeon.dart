@@ -6,6 +6,7 @@ export 'dart:typed_data' show Float64List, Int32List, Int64List, Uint8List;
 
 export 'src/cpp/cpp_generator.dart' show CppOptions;
 export 'src/dart/dart_generator.dart' show DartOptions;
+export 'src/dotnet/dotnet_generator.dart' show DotnetOptions;
 export 'src/gobject/gobject_generator.dart' show GObjectOptions;
 export 'src/java/java_generator.dart' show JavaOptions;
 export 'src/kotlin/kotlin_generator.dart'

@@ -1,6 +1,7 @@
 ## NEXT
 
 * Updates minimum supported SDK version to Flutter 3.38/Dart 3.10.
+* [dotnet] Adds Android C# generation via the `dotnet_out` option.
 
 ## 26.3.4
 

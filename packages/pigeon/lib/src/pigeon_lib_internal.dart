@@ -20,6 +20,7 @@ import 'ast.dart';
 import 'ast_generator.dart';
 import 'cpp/cpp_generator.dart';
 import 'dart/dart_generator.dart';
+import 'dotnet/dotnet_generator.dart';
 import 'generator_tools.dart';
 import 'gobject/gobject_generator.dart';
 import 'java/java_generator.dart';
@@ -37,6 +38,7 @@ class InternalPigeonOptions {
     required this.javaOptions,
     required this.swiftOptions,
     required this.kotlinOptions,
+    required this.dotnetOptions,
     required this.cppOptions,
     required this.gobjectOptions,
     required this.dartOptions,
@@ -86,6 +88,13 @@ class InternalPigeonOptions {
           : InternalKotlinOptions.fromKotlinOptions(
               options.kotlinOptions ?? const KotlinOptions(),
               kotlinOut: options.kotlinOut!,
+              copyrightHeader: copyrightHeader,
+            ),
+      dotnetOptions = options.dotnetOut == null
+          ? null
+          : InternalDotnetOptions.fromDotnetOptions(
+              options.dotnetOptions ?? const DotnetOptions(),
+              dotnetOut: options.dotnetOut!,
               copyrightHeader: copyrightHeader,
             ),
       cppOptions =
@@ -158,6 +167,9 @@ class InternalPigeonOptions {
 
   /// Options that control how Kotlin will be generated.
   final InternalKotlinOptions? kotlinOptions;
+
+  /// Options that control how C# will be generated.
+  final InternalDotnetOptions? dotnetOptions;
 
   /// Options that control how C++ will be generated.
   final InternalCppOptions? cppOptions;
@@ -679,6 +691,64 @@ class KotlinGeneratorAdapter implements GeneratorAdapter {
 
   @override
   List<Error> validate(InternalPigeonOptions options, Root root) => <Error>[];
+}
+
+/// A [GeneratorAdapter] that generates C# source code.
+class DotnetGeneratorAdapter implements GeneratorAdapter {
+  /// Constructor for [DotnetGeneratorAdapter].
+  const DotnetGeneratorAdapter();
+
+  /// A string representing the name of the language being generated.
+  static const String languageString = 'C#';
+
+  @override
+  List<FileType> get fileTypeList => const <FileType>[FileType.na];
+
+  @override
+  void generate(
+    StringSink sink,
+    InternalPigeonOptions options,
+    Root root,
+    FileType fileType,
+  ) {
+    if (options.dotnetOptions == null) {
+      return;
+    }
+    const generator = DotnetGenerator();
+    generator.generate(
+      options.dotnetOptions!,
+      root,
+      sink,
+      dartPackageName: options.dartPackageName,
+    );
+  }
+
+  @override
+  IOSink? shouldGenerate(InternalPigeonOptions options, FileType _) =>
+      _openSink(
+        options.dotnetOptions?.dotnetOut,
+        basePath: options.basePath ?? '',
+      );
+
+  @override
+  List<Error> validate(InternalPigeonOptions options, Root root) {
+    final errors = <Error>[];
+    if (root.requiresOverflowClass) {
+      errors.add(
+        Error(
+          message:
+              'C# generator does not yet support more than $totalCustomCodecKeysAllowed custom types.',
+        ),
+      );
+    }
+    if (root.containsProxyApi) {
+      errors.add(Error(message: 'C# generator does not support proxy APIs'));
+    }
+    _errorOnEventChannelApi(errors, languageString, root);
+    _errorOnSealedClass(errors, languageString, root);
+    _errorOnInheritedClass(errors, languageString, root);
+    return errors;
+  }
 }
 
 dart_ast.Annotation? _findMetadata(

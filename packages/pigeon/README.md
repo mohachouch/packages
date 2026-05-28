@@ -15,6 +15,7 @@ For usage examples, see the [Example README](./example/README.md).
 
 Currently pigeon supports generating:
 * Kotlin and Java code for Android
+* C# code for Android
 * Swift and Objective-C code for iOS and macOS
 * C++ code for Windows
 * GObject code for Linux
@@ -89,7 +90,8 @@ to the api to allow for multiple instances to be created and operate in parallel
    communication interface.
 1) Run pigeon on your ".dart" file to generate the required Dart and
    host-language code: `flutter pub get` then `dart run pigeon`
-   with suitable arguments. [Example](./example/README.md#Invocation).
+   with suitable arguments such as `--dotnet_out` for Android C# output.
+   [Example](./example/README.md#Invocation).
 1) Add the generated Dart code to `./lib` for compilation.
 1) Implement the host-language code and add it to your build (see below).
 1) Call the generated Dart methods.
@@ -121,9 +123,9 @@ to the api to allow for multiple instances to be created and operate in parallel
 
 ### Flutter calling into Android Steps
 
-1) Add the generated Java or Kotlin code to your `./android/app/src/main/java` directory
-   for compilation.
-1) Implement the generated Java or Kotlin interface for handling the calls on Android, set
+1) Add the generated Java, Kotlin, or C# code to your Android project for
+   compilation.
+1) Implement the generated host interface for handling the calls on Android, set
    it up as the handler for the messages.
 
 ### Flutter calling into Windows Steps

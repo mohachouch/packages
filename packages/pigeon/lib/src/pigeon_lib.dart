@@ -22,6 +22,7 @@ import 'package:path/path.dart' as path;
 import 'ast.dart';
 import 'cpp/cpp_generator.dart';
 import 'dart/dart_generator.dart';
+import 'dotnet/dotnet_generator.dart';
 import 'generator_tools.dart' as generator_tools;
 import 'generator_tools.dart';
 import 'gobject/gobject_generator.dart';
@@ -252,6 +253,8 @@ class PigeonOptions {
     this.swiftOptions,
     this.kotlinOut,
     this.kotlinOptions,
+    this.dotnetOut,
+    this.dotnetOptions,
     this.cppHeaderOut,
     this.cppSourceOut,
     this.cppOptions,
@@ -303,6 +306,12 @@ class PigeonOptions {
 
   /// Options that control how Kotlin will be generated.
   final KotlinOptions? kotlinOptions;
+
+  /// Path to the C# file that will be generated.
+  final String? dotnetOut;
+
+  /// Options that control how C# will be generated.
+  final DotnetOptions? dotnetOptions;
 
   /// Path to the ".h" C++ file that will be generated.
   final String? cppHeaderOut;
@@ -367,6 +376,12 @@ class PigeonOptions {
       kotlinOptions: map.containsKey('kotlinOptions')
           ? KotlinOptions.fromMap(map['kotlinOptions']! as Map<String, Object>)
           : null,
+      dotnetOut: map['dotnetOut'] as String?,
+      dotnetOptions: map.containsKey('dotnetOptions')
+          ? DotnetOptions.fromMap(
+              map['dotnetOptions']! as Map<String, Object>,
+            )
+          : null,
       cppHeaderOut: map['cppHeaderOut'] as String?,
       cppSourceOut: map['cppSourceOut'] as String?,
       cppOptions: map.containsKey('cppOptions')
@@ -406,6 +421,8 @@ class PigeonOptions {
       if (swiftOptions != null) 'swiftOptions': swiftOptions!.toMap(),
       if (kotlinOut != null) 'kotlinOut': kotlinOut!,
       if (kotlinOptions != null) 'kotlinOptions': kotlinOptions!.toMap(),
+      if (dotnetOut != null) 'dotnetOut': dotnetOut!,
+      if (dotnetOptions != null) 'dotnetOptions': dotnetOptions!.toMap(),
       if (cppHeaderOut != null) 'cppHeaderOut': cppHeaderOut!,
       if (cppSourceOut != null) 'cppSourceOut': cppSourceOut!,
       if (cppOptions != null) 'cppOptions': cppOptions!.toMap(),
@@ -556,6 +573,14 @@ ${_argParser.usage}''';
       help: 'Adds javax.annotation.Generated annotation to the output.',
     )
     ..addOption(
+      'dotnet_out',
+      help: 'Path to generated C# file (.cs).',
+    )
+    ..addOption(
+      'dotnet_namespace',
+      help: 'The namespace that generated C# code will be in.',
+    )
+    ..addOption(
       'cpp_header_out',
       help: 'Path to generated C++ header file (.h).',
       aliases: const <String>['experimental_cpp_header_out'],
@@ -654,6 +679,10 @@ ${_argParser.usage}''';
         useGeneratedAnnotation:
             results['kotlin_use_generated_annotation'] as bool? ?? false,
       ),
+      dotnetOut: results['dotnet_out'] as String?,
+      dotnetOptions: DotnetOptions(
+        namespace: results['dotnet_namespace'] as String?,
+      ),
       cppHeaderOut: results['cpp_header_out'] as String?,
       cppSourceOut: results['cpp_source_out'] as String?,
       cppOptions: CppOptions(namespace: results['cpp_namespace'] as String?),
@@ -726,6 +755,7 @@ ${_argParser.usage}''';
           const JavaGeneratorAdapter(),
           const SwiftGeneratorAdapter(),
           const KotlinGeneratorAdapter(),
+          const DotnetGeneratorAdapter(),
           const CppGeneratorAdapter(),
           const GObjectGeneratorAdapter(),
           const DartTestGeneratorAdapter(),

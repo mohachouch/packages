@@ -144,6 +144,22 @@ void main() {
     expect(opts.kotlinOptions!.useGeneratedAnnotation, isTrue);
   });
 
+  test('parse args - dotnet_out', () {
+    final PigeonOptions opts = Pigeon.parseArgs(<String>[
+      '--dotnet_out',
+      'Foo.cs',
+    ]);
+    expect(opts.dotnetOut, equals('Foo.cs'));
+  });
+
+  test('parse args - dotnet_namespace', () {
+    final PigeonOptions opts = Pigeon.parseArgs(<String>[
+      '--dotnet_namespace',
+      'Example.Namespace',
+    ]);
+    expect(opts.dotnetOptions?.namespace, equals('Example.Namespace'));
+  });
+
   test('parse args - cpp_header_out', () {
     final PigeonOptions opts = Pigeon.parseArgs(<String>[
       '--cpp_header_out',
